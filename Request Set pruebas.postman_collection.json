@@ -1,0 +1,606 @@
+{
+	"info": {
+		"_postman_id": "1456e932-95e8-4020-b3fd-84acf0c00863",
+		"name": "Request Set pruebas",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Get Token Fail",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "272a90ed-00fd-4465-8883-b007c6f69eeb",
+						"exec": [
+							"pm.test(\"Validar Status\", function(){",
+							"    pm.response.to.have.status(400)",
+							"});",
+							"",
+							"pm.test(\"Body matches string\", function(){",
+							"    pm.expect(pm.response.text()).to.include(\"error\");",
+							"});",
+							"",
+							"pm.test(\"Check body contains\", function() {",
+							"    var jsonData = pm.response.json()",
+							"    console.log(jsonData.error.code)",
+							"    pm.expect((jsonData.error.code)).equal(\"VALIDATION_FAILED\")",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "https://{{base_url}}/nga/api/v1.1/private/accounts?lang=es",
+					"protocol": "https",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"nga",
+						"api",
+						"v1.1",
+						"private",
+						"accounts"
+					],
+					"query": [
+						{
+							"key": "lang",
+							"value": "es"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "NewUser",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "07206489-2115-4fe0-a937-52bb912689d1",
+						"exec": [
+							"let user = \"agente\" + (Math.floor(Math.random() * 7685) *3) + \"@ventas.com\";",
+							"let pass = (Math.floor(Math.random() * 57684)+ 1000);",
+							"",
+							"console.log(user,pass);",
+							"pm.environment.set(\"email\", user);",
+							"//console.log(email);",
+							"",
+							"let encodedKeys = CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(user + \":\" + pass));",
+							"",
+							"console.log(user + \":\" + pass);",
+							"//console.log(encondedKeys);",
+							"",
+							"pm.environment.set(\"encoded\", encodedKeys);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "ac2348a3-0d5a-4a8c-9d9c-4ebdf0e947e1",
+						"exec": [
+							"pm.test(\"Validar status\", function(){",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"    ",
+							"    //Tomar el token del response y setearlo",
+							"    var jsonData = JSON.parse(responseBody);",
+							"    postman.setEnvironmentVariable(\"token\", jsonData.access_token);",
+							"    postman.setEnvironmentVariable(\"account_id\", jsonData.account.account_id);",
+							"    postman.setEnvironmentVariable(\"name\", jsonData.account.name);",
+							"    postman.setEnvironmentVariable(\"uuid\", jsonData.account.uuid);",
+							"    ",
+							"    console.log(\"account_id\", jsonData.account.account_id);",
+							"    console.log(\"token\", jsonData.account.token);",
+							"    console.log(\"name\", jsonData.account.name);",
+							"    console.log(\"uuid\", jsonData.account.uuid);",
+							"    ",
+							"    let messageString = jsonData.account.account_id;",
+							"    postman.setEnvironmentVariable(\"user\", messageString.split('/')[3]);",
+							"    console.log(messageString.split('/')[3]);",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Basic {{encoded}}",
+						"type": "text"
+					},
+					{
+						"key": "Origin",
+						"value": "https://www.segundamano.mx",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json.text/plain, */*",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"account\":{\"email\":\"{{email}}\"}}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://{{base_url}}/nga/api/v1.1/private/accounts",
+					"protocol": "https",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"nga",
+						"api",
+						"v1.1",
+						"private",
+						"accounts"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update phone number",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "6cbcedd4-0304-47f1-8dd8-8e6a2f863dee",
+						"exec": [
+							"// una forma de crear numeros",
+							"// pm.environment.set(\"phone\",(Math.floor(Math.random() * 53967683) + 1) + (Math.floor(Math.random() * 766855789) +1)));",
+							"",
+							"pm.environment.set(\"phone\",(_.random(111111111,9999999999)));"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "tag:scmcoord.com,2013:api {{token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json, text/plain, */*",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"account\":{\"name\": \"{{name}}\", \"phone\":\"{{phone}}\", \"phone_hidden\": true}}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://{{base_url}}/nga/api/v1/{{account_id}}",
+					"protocol": "https",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"nga",
+						"api",
+						"v1",
+						"{{account_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get token correctly",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Basic {{Authorization}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "https://{{base_url}}/nga/api/v1.1/private/accounts?lang=es",
+					"protocol": "https",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"nga",
+						"api",
+						"v1.1",
+						"private",
+						"accounts"
+					],
+					"query": [
+						{
+							"key": "lang",
+							"value": "es"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "NewAnuncio",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "9f5e9334-47c1-4369-8df9-6c36272c22cb",
+						"exec": [
+							"let texto = Math.random().toString(36).substring(2,15) + Math.random().toString(36).substring(2,15);",
+							"const ventas = \" \" + texto;",
+							"console.log(Math.random().toString(36).substring(2,24));",
+							"pm.environment.set(\"Texto\",ventas);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "5ed08827-5bbf-4797-afcb-362670e0c688",
+						"exec": [
+							"pm.test(\"Validar status\", function(){",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"",
+							"var jsonData = JSON.parse(responseBody);",
+							"postman.setEnvironmentVariable(\"ad\", jsonData.ad.ad_id);",
+							"",
+							"messageString = jsonData.action.action_id;",
+							"pm.environment.set(\"ad\", messageString.split('/')[5]);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json, text/plain, */*",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "tag:scmcoord.com,2013:api {{token}}",
+						"type": "text"
+					},
+					{
+						"key": "x-nga-source",
+						"value": "PHOENIX_DESKTOP",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"ad\":{\"locations\":[{\"code\":\"5\",\"key\":\"region\",\"label\":\"Baja California Sur\",\"locations\":[{\"code\":\"86131\",\"key\":\"municipality\",\"label\":\"Loreto\",\"locations\":[{\"code\":\"86199\",\"key\":\"area\",\"label\":\"Centro\"}]}]}],\"subject\":\"Laptop en renta\",\"body\":\"Videojuego con 2000 juegos, para una buena aventura {{Texto}}\",\"category\":{\"code\":\"5021\"},\"images\":[],\"price\":{\"currency\":\"mxn\",\"price_value\":0},\"ad_details\":{},\"phone_hidden\":0,\"plate\":\"\",\"vin\":\"\",\"type\":{\"code\":\"s\",\"label\":\"\"},\"ad\":\"Videojueo\"},\"category_suggestion\":false,\"commit\":true}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://{{base_url}}/nga/api/v1.7{{account_id}}/klfst?lang=es",
+					"protocol": "https",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"nga",
+						"api",
+						"v1.7{{account_id}}",
+						"klfst"
+					],
+					"query": [
+						{
+							"key": "lang",
+							"value": "es"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "EditarAnuncio",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "f7f079f8-c75a-49ac-ba4f-5fabf26bcb7e",
+						"exec": [
+							"texto = Math.random().toString(36).substring(5,15) + Math.random().toString(36).substring(2,15);",
+							"",
+							"const ventas = \" \" + texto;",
+							"console.log(Math.random().toString(36).substring(2,24));",
+							"pm.environment.set(\"Texto\", ventas);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "eddad5dd-b737-41a4-8992-a299c9f533e5",
+						"exec": [
+							"pm.test(\"Validar status\", function(){",
+							"    pm.response.to.have.to.status(201);",
+							"});",
+							"",
+							"var jsonData = JSON.parse(responseBody);",
+							"postman.setEnvironmentVariable(\"ad\", jsonData.ad.ad_id);",
+							"",
+							"const messageString = jsonData.ad.ad_id;",
+							"pm.environment.set(\"ad\", messageString.split(\"/\")[5]);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json.text/plain, */*",
+						"type": "text"
+					},
+					{
+						"key": "Authorization",
+						"value": "tag:scmcoord.com,2013:api {{token}}",
+						"type": "text"
+					},
+					{
+						"key": "x-nga-source",
+						"value": "PHOENIX_DESKTOP",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"ad\":{\"locations\":[{\"code\":\"5\",\"key\":\"region\",\"label\":\"Baja California Sur\",\"locations\":[{\"code\":\"86131\",\"key\":\"municipality\",\"label\":\"Loreto\",\"locations\":[{\"code\":\"86199\",\"key\":\"area\",\"label\":\"Centro\"}]}]}],\"subject\":\"Laptop en renta\",\"body\":\"Videojuego con 2000 juegos, para una buena aventura {{Texto}}\",\"category\":{\"code\":\"5021\"},\"images\":[],\"price\":{\"currency\":\"mxn\",\"price_value\":0},\"ad_details\":{},\"phone_hidden\":0,\"plate\":\"\",\"vin\":\"\",\"type\":{\"code\":\"s\",\"label\":\"\"},\"ad\":\"Videojueo\"},\"category_suggestion\":false,\"commit\":true}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://{{base_url}}/nga/api/v1.7{{account_id}}/klfst/{{ad}}/actions",
+					"protocol": "https",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"nga",
+						"api",
+						"v1.7{{account_id}}",
+						"klfst",
+						"{{ad}}",
+						"actions"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "ValidarDireccionSinDireccion",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "2e8b934a-d9a8-4853-82db-b46a8fde38ee",
+						"exec": [
+							"pm.test(\"Validr status\", function(){",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "a7adc4a8-6ccf-4ee0-b56c-9bc5a92c2f9e",
+						"exec": [
+							"var Token = pm.enviroment.get('token');",
+							"var uuid = pm.environment.get('uuid');",
+							"",
+							"console.log(uuid + \":\" + Token);",
+							"",
+							"let encodedKeys = CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(uuid + \":\" + Token));",
+							"",
+							"console.log(encodedKeys);",
+							"",
+							"pn.environment.set(\"token2\", encodedKeys);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Basic{{token2}}",
+						"type": "text"
+					}
+				],
+				"url": {
+					"raw": "https://{{base_url}}/addresses/v1/get",
+					"protocol": "https",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"addresses",
+						"v1",
+						"get"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "AgregarDireccion",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "40d1a371-b654-4ae4-b49b-7a364abc81c9",
+						"exec": [
+							"var Token = pm.environment.get('token');",
+							"var uuid = pm.environment.get('uuid');",
+							"",
+							"console.log(uuid + \":\" + Token);",
+							"",
+							"let encodedKeys = CryptoJS.enc.Base64.stringify(CryptoJS.enc.Utf8.parse(uuid + \":\" + Token));",
+							"",
+							"console.log(encodedKeys);",
+							"",
+							"pm.environment.set(\"token2\", encodedKeys);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "contact",
+							"value": "Renta laptop",
+							"type": "text"
+						},
+						{
+							"key": "phohe",
+							"value": "564892314",
+							"type": "text"
+						},
+						{
+							"key": "zipCode",
+							"value": "23880",
+							"type": "text"
+						},
+						{
+							"key": "exteriorInfo",
+							"value": "Lopez Velardi 412",
+							"type": "text"
+						},
+						{
+							"key": "region",
+							"value": "613",
+							"type": "text"
+						},
+						{
+							"key": "municipality",
+							"value": "213",
+							"type": "text"
+						},
+						{
+							"key": "alias",
+							"value": "Renta Lap",
+							"type": "text"
+						}
+					],
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://{{base_url}}/addresses/v1/create",
+					"protocol": "https",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"addresses",
+						"v1",
+						"create"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "borrarAnuncio",
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "tag:scmcoord.com,2013:api{{token}}",
+						"type": "text"
+					},
+					{
+						"key": "Accept",
+						"value": "application/json,text/plain, */*",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\"delete_reason\":{\"code\": \"5\"}}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://{{base_url}}/nga/api/v1{{account_id}}/klfst/{{ad}}",
+					"protocol": "https",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"nga",
+						"api",
+						"v1{{account_id}}",
+						"klfst",
+						"{{ad}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}
